@@ -115,14 +115,15 @@ export default function UserCard({
   };
 
   const confirmedRemoveCard = (index) => {
-    const values = [...inputCards];
-    values.splice(index, 1);
-    setInputCards(values);
-    console.log(inputCards);
-
-    axios.delete(`https://kenziehub.me/users/works/${inputCard.id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    axios
+      .delete(`https://kenziehub.me/users/works/${inputCard.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then(() => {
+        const values = [...inputCards];
+        values.splice(index, 1);
+        setInputCards(values);
+      });
   };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
