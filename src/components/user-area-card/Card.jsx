@@ -15,6 +15,9 @@ import {
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { ImCheckboxChecked } from "react-icons/im";
+import Fade from "@material-ui/core/Fade";
+
+import Popper from "@material-ui/core/Popper";
 import axios from "axios";
 import { useSelector } from "react-redux";
 
@@ -56,6 +59,25 @@ const useStyles = makeStyles((theme) => ({
     padding: "1px",
     justifyContent: "center",
   },
+  paper: {
+    border: "1px solid",
+    backgroundColor: theme.palette.background.paper,
+  },
+  popup: {
+    padding: theme.spacing(1),
+    boxShadow:
+      "0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12)",
+    backgroundColor: "#424242",
+    color: "#fff",
+  },
+  cancel: {
+    margin: theme.spacing(3, 0, 2),
+    color: "#f48fb1",
+    "& :hover": {
+      backgroundColor: "red",
+      color: "#fff",
+    },
+  },
 }));
 
 export default function UserCard({
@@ -88,15 +110,25 @@ export default function UserCard({
     setInputCards(values);
   };
 
-  const handleRemoveCard = (index) => {
+  const handleRemoveCard = (event) => {
+    setAnchorEl(anchorEl ? null : event.currentTarget);
+  };
+
+  const confirmedRemoveCard = (index) => {
     const values = [...inputCards];
     values.splice(index, 1);
     setInputCards(values);
+    console.log(inputCards);
 
     axios.delete(`https://kenziehub.me/users/works/${inputCard.id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
   };
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const open = Boolean(anchorEl);
+  const id = open ? "transitions-popper" : undefined;
 
   return (
     <Card className={classes.root} variant="outlined">
@@ -148,8 +180,42 @@ export default function UserCard({
           <FaEdit className={classes.editButton} />
         </IconButton>
 
-        <IconButton onClick={() => handleRemoveCard(index)}>
+        <IconButton onClick={(event) => handleRemoveCard(event)}>
           <MdDelete className={classes.deleteButton} />
+          <Popper
+            id={id}
+            open={open}
+            anchorEl={anchorEl}
+            transition
+            placement="bottom"
+            disablePortal={false}
+            modifiers={{
+              flip: {
+                enabled: true,
+              },
+              preventOverflow: {
+                enabled: true,
+                boundariesElement: "scrollParent",
+              },
+            }}
+          >
+            {({ TransitionProps }) => (
+              <Fade {...TransitionProps}>
+                <div className={classes.popup}>
+                  <span>Você tem certeza?</span>
+                  <div>
+                    <Button
+                      fullWidth
+                      className={classes.cancel}
+                      onClick={() => confirmedRemoveCard(index)}
+                    >
+                      Deletar
+                    </Button>
+                  </div>
+                </div>
+              </Fade>
+            )}
+          </Popper>
         </IconButton>
 
         <Button onClick={disableEdit} className={classes.saveButtonOuter}>
